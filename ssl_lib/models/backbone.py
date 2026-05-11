@@ -3,8 +3,9 @@ Backbone (encoder) 모듈.
 
 torchvision의 ResNet을 wrap해서 SSL용으로 만든다.
 - 마지막 fc layer 제거 (avgpool 출력만 반환)
-- small_image=True일 때 첫 conv를 3x3/stride1, maxpool 제거
-  (CIFAR/STL처럼 작은 이미지용. evaluate.py가 원본 ResNet을 가정하면 False로.)
+- small_image=True일 때 첫 conv를 3x3/stride2, maxpool 제거
+  stride=2로 96→48 다운샘플링 유지, maxpool만 제거해 feature 보존.
+  (stride=1로 하면 layer1이 96×96 전체를 처리해 25GB GPU에서도 OOM 발생)
 
 MoCo v2와 BYOL이 모두 같은 backbone 클래스를 import해서 공정 비교.
 """
@@ -35,8 +36,8 @@ class ResNetBackbone(nn.Module):
         """
         Args:
             name: "resnet18" | "resnet34" | "resnet50"
-            small_image: True면 첫 conv를 3x3/stride1, maxpool 제거.
-                STL10(96) / CIFAR(32)처럼 작은 이미지일 때 권장.
+            small_image: True면 첫 conv를 3x3/stride2, maxpool 제거.
+                96→48 다운샘플 후 layer1 진입. stride=1 대비 메모리 4배 절약.
                 ⚠️ evaluate.py가 원본 ResNet 구조를 가정한다면 False로 둬야 함.
             zero_init_residual: ResNet의 마지막 BN을 0으로 초기화 (학습 안정성).
                 He et al. (2018) "Bag of Tricks"에서 권장.
@@ -58,12 +59,14 @@ class ResNetBackbone(nn.Module):
         )
         
         # 작은 이미지 대응: 첫 conv 수정 + maxpool 제거
+        # stride=2 유지: 96→48. maxpool만 제거해 추가 다운샘플 방지.
+        # stride=1로 하면 layer1이 96×96(256ch)을 처리 → backprop activation ~8GB → OOM.
         if small_image:
             net.conv1 = nn.Conv2d(
                 in_channels=3,
                 out_channels=64,
                 kernel_size=3,
-                stride=1,
+                stride=2,
                 padding=1,
                 bias=False,
             )
