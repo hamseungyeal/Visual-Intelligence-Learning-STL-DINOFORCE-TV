@@ -8,7 +8,7 @@ set -e
 
 mkdir -p logs outputs
 
-CUDA_VISIBLE_DEVICES=1 nohup python scripts/pretrain.py \
+CUDA_VISIBLE_DEVICES=1 nohup python3 scripts/pretrain.py \
     --config configs/byol_r50.yaml \
     --seed 42 \
     > logs/byol_seed42.stdout 2>&1 &

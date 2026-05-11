@@ -8,7 +8,7 @@ set -e
 
 mkdir -p logs outputs
 
-CUDA_VISIBLE_DEVICES=0 nohup python scripts/pretrain.py \
+CUDA_VISIBLE_DEVICES=0 nohup python3 scripts/pretrain.py \
     --config configs/mocov2_r50.yaml \
     --seed 42 \
     > logs/mocov2_seed42.stdout 2>&1 &
