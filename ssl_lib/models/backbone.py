@@ -96,16 +96,17 @@ class ResNetBackbone(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         if self.small_image:
-            # small_image 모드: 수동 forward로 layer1/layer2에 checkpointing 적용
-            # layer1(96×96), layer2(48×48)이 activation 대부분을 차지함
+            # small_image 모드: 수동 forward로 전 layer에 checkpointing 적용.
+            # symmetric_loss=True면 encoder_q가 두 번 실행되어 activation이 두 배로 쌓임.
+            # layer3는 6개 bottleneck 블록(ResNet-50)으로 특히 메모리 큼 → 반드시 ckpt 필요.
             x = self.net.conv1(x)
             x = self.net.bn1(x)
             x = self.net.relu(x)
             x = self.net.maxpool(x)      # Identity
             x = self._ckpt(self.net.layer1, x)
             x = self._ckpt(self.net.layer2, x)
-            x = self.net.layer3(x)
-            x = self.net.layer4(x)
+            x = self._ckpt(self.net.layer3, x)
+            x = self._ckpt(self.net.layer4, x)
             x = self.net.avgpool(x)
             x = torch.flatten(x, 1)
             return x
