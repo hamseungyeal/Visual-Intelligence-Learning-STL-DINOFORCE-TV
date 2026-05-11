@@ -28,7 +28,7 @@ augmentation:
 
 optimizer:
   name: sgd
-  lr: 0.03
+  lr: 0.015                   # linear scaling: 0.03 × (256/512)
   momentum: 0.9
   weight_decay: 1.0e-4
 
@@ -37,7 +37,7 @@ schedule:
   warmup_epochs: 10
 
 training:
-  batch_size: 512
+  batch_size: 256             # 512→256: small_image=True로 96x96 feature map이 커서 OOM
   amp: true
   grad_clip: null
   seed: 42
