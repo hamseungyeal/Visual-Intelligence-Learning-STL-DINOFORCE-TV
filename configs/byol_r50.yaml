@@ -9,6 +9,7 @@ backbone:
   name: resnet50
   small_image: true
   zero_init_residual: true
+  gradient_checkpoint: true    # layer1/2 activation 재계산으로 OOM 방지 (~30% 속도 손실)
 
 data:
   root: ./data
