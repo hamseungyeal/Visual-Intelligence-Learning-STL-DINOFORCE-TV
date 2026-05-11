@@ -13,10 +13,10 @@ venv/
 # Notebook
 .ipynb_checkpoints/
 
-# Project outputs
-outputs/
-logs/
-data/
+# Project outputs (루트 기준 경로로 지정 — ssl_lib/data/ 제외 방지)
+/outputs/
+/logs/
+/data/
 
 # IDE
 .idea/
