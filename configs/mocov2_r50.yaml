@@ -1,0 +1,62 @@
+# ====================================================================
+# MoCo v2 — ResNet-50 baseline config
+# 베이스 config의 모든 키 포함 + MoCo v2 전용 설정
+# ====================================================================
+
+method: mocov2
+
+# ---- base 공통 설정 (복사) ----
+backbone:
+  name: resnet50
+  small_image: true
+  zero_init_residual: true
+
+data:
+  root: ./data
+  dataset: stl10_unlabeled
+  image_size: 96
+  num_workers: 8
+  persistent_workers: true
+  download: true
+
+augmentation:
+  crop_scale: [0.2, 1.0]
+  color_jitter: [0.4, 0.4, 0.4, 0.1]
+  color_jitter_p: 0.8
+  grayscale_p: 0.2
+  gaussian_blur_p: 0.5
+
+optimizer:
+  name: sgd
+  lr: 0.03
+  momentum: 0.9
+  weight_decay: 1.0e-4
+
+schedule:
+  epochs: 400
+  warmup_epochs: 10
+
+training:
+  batch_size: 512
+  amp: true
+  grad_clip: null
+  seed: 42
+  log_every: 50
+  save_every: 10
+  keep_last_n_ckpts: 3
+
+# ---- MoCo v2 전용 ----
+projection:
+  hidden_dim: 2048
+  output_dim: 128             # MoCo 표준
+  num_layers: 2
+
+mocov2:
+  queue_size: 16384           # STL10 100k에 맞춤 (65536은 과함). batch_size의 배수여야 함.
+  momentum: 0.999
+  temperature: 0.2
+  symmetric_loss: true        # 양방향 InfoNCE — 무료 ~0.5% 개선
+
+output:
+  dir: ./outputs/mocov2_r50_seed42
+  log_file: ./logs/mocov2_seed42.log

@@ -1,0 +1,44 @@
+# ====================================================================
+# 공통 베이스 config — 두 모델이 동일하게 공유하는 부분
+# 각 모델별 yaml에서 import 후 모델 전용 설정 override.
+# ====================================================================
+
+backbone:
+  name: resnet50              # resnet18 | resnet34 | resnet50
+  small_image: true           # 96x96 입력에 맞춰 첫 conv 수정
+                              # ⚠️ evaluate.py가 원본 ResNet 가정이면 false로
+  zero_init_residual: true
+
+data:
+  root: ./data                # STL10 다운로드/저장 경로
+  dataset: stl10_unlabeled
+  image_size: 96
+  num_workers: 8              # CPU 코어 부족하면 4로 줄임
+  persistent_workers: true    # epoch 사이에 worker 유지 (속도)
+  download: true
+
+augmentation:
+  crop_scale: [0.2, 1.0]      # cross-resolution(STL96→CIFAR32) 대비 위해 lower 줄임
+  color_jitter: [0.4, 0.4, 0.4, 0.1]   # [brightness, contrast, saturation, hue]
+  color_jitter_p: 0.8
+  grayscale_p: 0.2
+  gaussian_blur_p: 0.5
+
+optimizer:
+  name: sgd
+  lr: 0.03                    # base LR. batch=512 기준. 다른 batch면 linear scaling.
+  momentum: 0.9
+  weight_decay: 1.0e-4
+
+schedule:
+  epochs: 400
+  warmup_epochs: 10
+
+training:
+  batch_size: 512             # A5000 24GB + AMP 기준 안전선. OOM 나면 256으로
+  amp: true                   # mixed precision 필수
+  grad_clip: null             # null이면 비활성
+  seed: 42
+  log_every: 50               # step 단위로 log 찍는 주기
+  save_every: 10              # epoch 단위로 checkpoint 저장 주기
+  keep_last_n_ckpts: 3        # 디스크 절약용 — 최근 N개만 유지
