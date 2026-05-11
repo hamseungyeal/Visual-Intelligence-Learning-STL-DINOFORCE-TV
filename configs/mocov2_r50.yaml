@@ -34,7 +34,7 @@ optimizer:
   weight_decay: 1.0e-4
 
 schedule:
-  epochs: 400
+  epochs: 200
   warmup_epochs: 10
 
 training:
