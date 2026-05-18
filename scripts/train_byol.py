@@ -37,6 +37,8 @@ def main():
                         help='학습 epoch 수 override (미지정 시 config 값 사용)')
     parser.add_argument('--batch-size', type=int, default=None,
                         help='Batch size override (OOM 시 256으로 줄임)')
+    parser.add_argument('--num-workers', type=int, default=None,
+                        help='DataLoader worker 수 override (Colab 등에서 2 권장)')
     args = parser.parse_args()
 
     assert torch.cuda.is_available(), 'GPU 사용 불가! CUDA 환경을 확인하세요.'
@@ -50,6 +52,9 @@ def main():
         cfg['schedule']['epochs'] = args.epochs
     if args.batch_size is not None:
         cfg['training']['batch_size'] = args.batch_size
+    if args.num_workers is not None:
+        cfg['data']['num_workers'] = args.num_workers
+        cfg['data']['persistent_workers'] = args.num_workers > 0
 
     pretrain(cfg, resume_from=args.resume)
 
