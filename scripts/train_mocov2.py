@@ -36,6 +36,8 @@ def main():
                         help='Batch size override (OOM 시 256으로 줄임)')
     parser.add_argument('--num-workers', type=int, default=None,
                         help='DataLoader worker 수 override (Colab 등에서 2 권장)')
+    parser.add_argument('--save-every', type=int, default=None,
+                        help='checkpoint 저장 주기 override (Colab 등에서 5 권장)')
     args = parser.parse_args()
 
     assert torch.cuda.is_available(), 'GPU 사용 불가! CUDA 환경을 확인하세요.'
@@ -52,6 +54,8 @@ def main():
     if args.num_workers is not None:
         cfg['data']['num_workers'] = args.num_workers
         cfg['data']['persistent_workers'] = args.num_workers > 0
+    if args.save_every is not None:
+        cfg['training']['save_every'] = args.save_every
 
     pretrain(cfg, resume_from=args.resume)
 
