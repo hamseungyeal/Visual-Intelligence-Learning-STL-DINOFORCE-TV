@@ -73,7 +73,43 @@ nvidia-smi
 kill <PID>
 ```
 
-## 4. Resume
+## 4. Google Colab (L4)에서 학습
+
+코드 수정 없이 Colab에서 바로 실행 가능. 수동으로 파일을 Drive에 올릴 필요 없음.
+
+### 파일 관리 원칙
+
+| 항목 | 저장 위치 | 설명 |
+|------|-----------|------|
+| 코드 | GitHub | 세션마다 `git pull`로 최신화 |
+| STL10 데이터 | Google Drive | 첫 실행 시 자동 다운로드, 이후 재사용 |
+| 체크포인트 | Google Drive | 세션 끊겨도 유지 |
+| 로그 | Google Drive | 세션 끊겨도 유지 |
+
+Drive 경로: `내 드라이브/ssl_project/{data, outputs, logs}`
+
+### 실행 순서
+
+**처음 실행:**
+1. `notebooks/colab_train_mocov2.ipynb` (또는 `colab_train_byol.ipynb`) 열기
+2. Cell 1 — GPU 확인 (L4 선택 필요: 런타임 → 런타임 유형 변경)
+3. Cell 2 — Google Drive 마운트
+4. Cell 3 — 레포 클론 + 패키지 설치 + Drive 심링크 연결
+5. Cell 4 — 학습 시작 (처음부터 자동 시작)
+
+**세션 재시작 후 (중간에 끊긴 경우):**
+- Cell 1~3만 다시 실행
+- Cell 4 실행 → Drive에 저장된 마지막 체크포인트에서 자동으로 이어서 시작
+
+### Colab 전용 설정
+
+- `--num-workers 2`: Colab에서 8이면 DataLoader가 불안정
+- `--save-every 5`: 5 epoch마다 저장 (세션 끊겨도 최대 ~90분 손실)
+- 로컬 서버와 달리 `CUDA_VISIBLE_DEVICES` 설정 불필요 (GPU 1개 환경)
+
+---
+
+## 5. Resume
 
 학습이 중단되면:
 ```bash
@@ -82,7 +118,7 @@ CUDA_VISIBLE_DEVICES=0 python scripts/pretrain.py \
     --resume outputs/mocov2_r50_seed42/ckpt_ep200.pth
 ```
 
-## 5. 산출물
+## 6. 산출물
 
 ```
 outputs/mocov2_r50_seed42/
