@@ -37,7 +37,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
-# ���� Fixed hyperparameters (DO NOT change) ����
+# Fixed hyperparameters (DO NOT change)
 EPOCHS = 100
 BATCH_SIZE = 128
 
