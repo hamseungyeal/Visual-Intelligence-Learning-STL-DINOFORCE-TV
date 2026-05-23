@@ -179,7 +179,13 @@ def pretrain(cfg: dict, resume_from: Optional[str] = None) -> None:
     if resume_from is not None:
         from .utils.checkpoint import load_checkpoint
         start_epoch = load_checkpoint(model, resume_from, optimizer)
+        # scheduler step_count를 resume 지점으로 복원 (0으로 리셋되면 warmup 재실행됨)
+        lr_scheduler.step_count = start_epoch * len(loader)
+        correct_lr = lr_scheduler._compute_lr(lr_scheduler.step_count)
+        for g, ratio in zip(optimizer.param_groups, lr_scheduler.lr_ratios):
+            g["lr"] = correct_lr * ratio
         logger.info(f"Resumed from {resume_from}, starting at epoch {start_epoch}")
+        logger.info(f"Scheduler restored to step {lr_scheduler.step_count}, lr={correct_lr:.5f}")
     
     is_byol = cfg["method"].lower() == "byol"
     
